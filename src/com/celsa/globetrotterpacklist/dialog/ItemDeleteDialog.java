@@ -47,6 +47,7 @@ public class ItemDeleteDialog extends DialogFragment {
 
     public interface OnDeleteItemListener {
         void onDeleteItemOK(long itemId, String name);
+
         void onDeleteItemCancel();
     }
 }

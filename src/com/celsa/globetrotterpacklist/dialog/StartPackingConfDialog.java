@@ -34,6 +34,7 @@ public class StartPackingConfDialog extends DialogFragment {
 
     public interface OnUncheckAllItemsListener {
         void onStartPackingOk();
+
         void onStartPackingCancel();
     }
 }

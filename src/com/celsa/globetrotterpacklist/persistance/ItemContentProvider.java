@@ -19,6 +19,7 @@ public class ItemContentProvider extends RoboContentProvider {
     private DatabaseHandler dbHandler;
 
     private static final UriMatcher uriMatcher;
+
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(AUTHORITY, "items", ITEMS_ALL);
