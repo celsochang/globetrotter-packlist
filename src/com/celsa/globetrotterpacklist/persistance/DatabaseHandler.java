@@ -9,11 +9,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private final static String DB_NAME = "db";
     private final static int DB_VERSION = 1;
-    Context context;
 
     public DatabaseHandler(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
-        this.context = context;
     }
 
     @Override
