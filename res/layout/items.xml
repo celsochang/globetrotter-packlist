@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:dslv="http://schemas.android.com/apk/res/com.celsa.globetrotterpacklist"
+              android:orientation="vertical"
+              android:focusable="true"
+              android:focusableInTouchMode="true"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+
+    <com.celsa.globetrotterpacklist.dslv.DragSortListView
+            android:id="@+id/list_items"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            dslv:drag_start_mode="onLongPress"
+            dslv:drag_handle_id="@+id/items_item_photo"/>
+
+</LinearLayout>
+
