@@ -216,4 +216,8 @@ public class Items extends RoboFragmentActivity implements LoaderManager.LoaderC
         ((StartPackingConfDialog) getSupportFragmentManager().findFragmentByTag(
                 "startpacking_conf_dialog")).dismiss();
     }
+
+    public ItemService getItemService() {
+        return itemService;
+    }
 }
