@@ -60,6 +60,11 @@ public class ItemAddEditDialog extends RoboDialogFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -93,7 +98,7 @@ public class ItemAddEditDialog extends RoboDialogFragment {
             title.setText(name);
             nameET.setText(name);
             if (photoId != null) {
-                photoIV.setImageBitmap(ExternalStorageUtils.loadItemPhoto(photoId));
+                photoIV.setImageBitmap(ExternalStorageUtils.loadItemThumbnail(photoId));
             }
         }
 
@@ -146,12 +151,21 @@ public class ItemAddEditDialog extends RoboDialogFragment {
             Bitmap bitmap = (Bitmap) data.getExtras().get("data");
 
             try {
-                photoId = ExternalStorageUtils.saveItemPhoto(bitmap);
+                // Save image thumbnail
+                photoId = ExternalStorageUtils.saveItemThumbnail(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+            // Delete image from gallery
+            cr.delete(data.getData(), null, null);
+
             photoIV.setImageBitmap(bitmap);
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
     }
 }

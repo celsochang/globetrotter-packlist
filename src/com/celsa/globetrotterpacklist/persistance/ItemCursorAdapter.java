@@ -42,7 +42,7 @@ public class ItemCursorAdapter extends DragSortCursorAdapter {
             new AsyncTask<Void, Void, Bitmap>() {
                 @Override
                 protected Bitmap doInBackground(Void... params) {
-                    return ExternalStorageUtils.loadItemPhoto(photoId);
+                    return ExternalStorageUtils.loadItemThumbnail(photoId);
                 }
 
                 @Override
