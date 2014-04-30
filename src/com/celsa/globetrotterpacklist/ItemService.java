@@ -19,32 +19,47 @@ public class ItemService {
     ContentResolver cr;
 
     public Item getItem(long id) {
-        Cursor result = cr.query(ItemContentProvider.ITEMS,
-                new String[] {"_id", "name", "photo_id"},"_id = ?", new String[] {String.valueOf(id)}, null);
+        Cursor cursor = cr.query(ItemContentProvider.ITEMS, new String[] {"_id", "name", "photo_id"}, "_id = ?",
+                new String[] {String.valueOf(id)}, null);
 
         Item item = null;
 
         try {
-            result.moveToFirst();
+            cursor.moveToFirst();
             item = new Item(
-                    result.getLong(result.getColumnIndex("_id")),
-                    result.getString(result.getColumnIndex("name")),
-                    result.getString(result.getColumnIndex("photo_id")));
+                    cursor.getLong(cursor.getColumnIndex("_id")),
+                    cursor.getString(cursor.getColumnIndex("name")),
+                    cursor.getString(cursor.getColumnIndex("photo_id")));
         } finally {
-            result.close();
+            cursor.close();
         }
 
         return item;
     }
 
-    public long getItemMaxOrder() {
-        Cursor result = cr.query(ItemContentProvider.ITEMS, new String[] {"max(\"order\")"}, null, null, null);
+    public byte[] getItemImage(long id) {
+        Cursor cursor = cr.query(ItemContentProvider.ITEMS, new String[] {"image"}, "_id = ?",
+                new String[] {String.valueOf(id)}, null);
+
+        byte[] image = null;
 
         try {
-            result.moveToFirst();
-            return result.getInt(0);
+            cursor.moveToFirst();
+            image = cursor.getBlob(cursor.getColumnIndex("image"));
         } finally {
-            result.close();
+            cursor.close();
+        }
+        return image;
+    }
+
+    public long getItemMaxOrder() {
+        Cursor cursor = cr.query(ItemContentProvider.ITEMS, new String[] {"max(\"order\")"}, null, null, null);
+
+        try {
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        } finally {
+            cursor.close();
         }
     }
 

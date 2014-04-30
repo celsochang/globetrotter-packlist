@@ -4,9 +4,16 @@ public class Item {
 
     private long id;
     private String name;
+    private byte[] image;
     private String photoId;
     private Integer status;
     private Integer order;
+
+    public Item(long id, String name, byte[] image) {
+        this.id = id;
+        this.name = name;
+        this.image = image;
+    }
 
     public Item(long id, String name, String photoId) {
         this.id = id;
@@ -28,6 +35,14 @@ public class Item {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 
     public String getPhotoId() {

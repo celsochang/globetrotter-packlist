@@ -19,6 +19,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE item (" +
                 "_id         integer       NOT NULL," +
                 "name        varchar(100)  NOT NULL," +
+                "image       blob          DEFAULT NULL," +
                 "photo_id    varchar(100)  DEFAULT NULL," +
                 "status      integer(1)    NOT NULL DEFAULT 0," +
                 "\"order\"   integer       NOT NULL," +

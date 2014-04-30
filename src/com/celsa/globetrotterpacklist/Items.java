@@ -131,8 +131,8 @@ public class Items extends RoboFragmentActivity implements LoaderManager.LoaderC
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this, ItemContentProvider.ITEMS, new String[]{"_id", "name", "photo_id", "status"},
-                null, null, "\"order\" ASC");
+        return new CursorLoader(this, ItemContentProvider.ITEMS, new String[]{"_id", "name", "image", "photo_id",
+                "status"}, null, null, "\"order\" ASC");
     }
 
     @Override

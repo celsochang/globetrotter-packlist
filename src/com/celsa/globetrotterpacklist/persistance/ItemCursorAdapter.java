@@ -1,21 +1,30 @@
 package com.celsa.globetrotterpacklist.persistance;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.celsa.globetrotterpacklist.ItemService;
 import com.celsa.globetrotterpacklist.R;
 import com.celsa.globetrotterpacklist.dslv.DragSortCursorAdapter;
+import com.google.inject.Inject;
+import roboguice.RoboGuice;
 
 public class ItemCursorAdapter extends DragSortCursorAdapter {
 
+    @Inject
+    private ItemService itemService;
+
     public ItemCursorAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
+        RoboGuice.getInjector(context).injectMembers(this);
     }
 
     @Override
@@ -30,29 +39,34 @@ public class ItemCursorAdapter extends DragSortCursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, final Context context, Cursor cursor) {
         TextView name = (TextView) view.getTag(R.id.items_item_name);
         final ImageView photo = (ImageView) view.getTag(R.id.items_item_photo);
         ImageView status = (ImageView) view.getTag(R.id.items_item_status);
 
         name.setText(cursor.getString(cursor.getColumnIndex("name")));
 
-        final String photoId = cursor.getString(cursor.getColumnIndex("photo_id"));
-        if (photoId != null) {
-            new AsyncTask<Void, Void, Bitmap>() {
-                @Override
-                protected Bitmap doInBackground(Void... params) {
-                    return ExternalStorageUtils.loadItemThumbnail(photoId);
-                }
+        final boolean hasImage = !cursor.isNull(cursor.getColumnIndex("image"));
 
-                @Override
-                protected void onPostExecute(Bitmap result) {
-                    photo.setImageBitmap(result);
+        new AsyncTask<Long, Void, Bitmap>() {
+            @Override
+            protected Bitmap doInBackground(Long... params) {
+                Bitmap b;
+
+                if (hasImage) {
+                    byte[] image = itemService.getItemImage(params[0]);
+                    b = BitmapFactory.decodeByteArray(image, 0, image.length);
+                } else {
+                    b = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
                 }
-            }.execute();
-        } else {
-            photo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher));
-        }
+                return b;
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap result) {
+                photo.setImageBitmap(result);
+            }
+        }.execute(cursor.getLong(cursor.getColumnIndex("_id")));
 
         if (cursor.getInt(cursor.getColumnIndex("status")) == 0) {
             status.setImageResource(android.R.drawable.ic_delete);
@@ -61,6 +75,16 @@ public class ItemCursorAdapter extends DragSortCursorAdapter {
             status.setImageResource(android.R.drawable.btn_star);
             view.setTag(1);
         }
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return super.getItemViewType(position);
     }
 
     public int getNumCheckedItems() {

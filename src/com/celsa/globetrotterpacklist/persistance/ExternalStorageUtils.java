@@ -10,20 +10,17 @@ import java.util.UUID;
 
 public class ExternalStorageUtils {
 
-    public static String saveItemThumbnail(Bitmap bitmap) throws IOException {
-        String itemThumbnailId = null;
-
+    public static void saveItemThumbnail(Bitmap bitmap, String filename) throws IOException {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String path = Environment.getExternalStorageDirectory().getAbsolutePath();
             File dir = new File(path + File.separator + Constants.PHOTOS_DIR);
 
             dir.mkdirs();
 
-            itemThumbnailId = UUID.randomUUID().toString();
-            File file = new File(dir, itemThumbnailId);
+            File file = new File(dir, filename);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
             FileOutputStream fos = null;
 
@@ -37,8 +34,6 @@ public class ExternalStorageUtils {
                 }
             }
         }
-
-        return itemThumbnailId;
     }
 
     public static Bitmap loadItemThumbnail(String photoId) {

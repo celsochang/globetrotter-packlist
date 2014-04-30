@@ -19,10 +19,12 @@ import com.celsa.globetrotterpacklist.persistance.ItemContentProvider;
 import com.celsa.globetrotterpacklist.ItemService;
 import com.celsa.globetrotterpacklist.R;
 import com.google.inject.Inject;
+import org.apache.http.util.EntityUtils;
 import roboguice.fragment.RoboDialogFragment;
 import roboguice.inject.InjectView;
 
 import java.io.*;
+import java.util.UUID;
 
 public class ItemAddEditDialog extends RoboDialogFragment {
 
@@ -32,6 +34,8 @@ public class ItemAddEditDialog extends RoboDialogFragment {
     private TextView title;
     @InjectView(R.id.add_edit_item_name)
     private EditText nameET;
+    @InjectView(R.id.add_edit_item_photo)
+    private ImageView photoIV;
     @InjectView(R.id.add_edit_item_save)
     private Button save;
 
@@ -44,7 +48,7 @@ public class ItemAddEditDialog extends RoboDialogFragment {
     private Long id;
     private String name;
     private String photoId;
-    private ImageView photoIV;
+    private Bitmap tempPhoto;
 
     public static ItemAddEditDialog newInstance(Item item) {
         ItemAddEditDialog dialog = new ItemAddEditDialog();
@@ -79,7 +83,6 @@ public class ItemAddEditDialog extends RoboDialogFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        photoIV = (ImageView) view.findViewById(R.id.add_edit_item_photo);
         photoIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,13 +94,22 @@ public class ItemAddEditDialog extends RoboDialogFragment {
             }
         });
 
+        tempPhoto = ExternalStorageUtils.loadItemThumbnail("temp");
+
         if (id == -1) {
             title.setText("Add Item");
-            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
+            if (tempPhoto != null) {
+                photoIV.setImageBitmap(tempPhoto);
+            }
+
         } else {
             title.setText(name);
             nameET.setText(name);
-            if (photoId != null) {
+
+            if (tempPhoto != null) {
+                photoIV.setImageBitmap(tempPhoto);
+            } else if (photoId != null) {
                 photoIV.setImageBitmap(ExternalStorageUtils.loadItemThumbnail(photoId));
             }
         }
@@ -108,7 +120,11 @@ public class ItemAddEditDialog extends RoboDialogFragment {
                 if (isNewItemValid()) {
                     ContentValues cv = new ContentValues();
                     cv.put("name", nameET.getText().toString());
-                    cv.put("photo_id", photoId);
+                    cv.put("photo_id", photoId == null ? UUID.randomUUID().toString() : photoId);
+
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    tempPhoto.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                    cv.put("image", bos.toByteArray());
 
                     if (id == -1) {
                         cv.put("\"order\"", itemService.getItemMaxOrder() + 1);
@@ -151,8 +167,9 @@ public class ItemAddEditDialog extends RoboDialogFragment {
             Bitmap bitmap = (Bitmap) data.getExtras().get("data");
 
             try {
-                // Save image thumbnail
-                photoId = ExternalStorageUtils.saveItemThumbnail(bitmap);
+                // Save temp thumbnail
+                ExternalStorageUtils.saveItemThumbnail(bitmap, "temp");
+                tempPhoto = bitmap;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -162,10 +179,5 @@ public class ItemAddEditDialog extends RoboDialogFragment {
 
             photoIV.setImageBitmap(bitmap);
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
     }
 }
