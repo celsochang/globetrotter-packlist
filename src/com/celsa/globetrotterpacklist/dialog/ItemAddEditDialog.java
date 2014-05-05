@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -19,12 +21,10 @@ import com.celsa.globetrotterpacklist.persistance.ItemContentProvider;
 import com.celsa.globetrotterpacklist.ItemService;
 import com.celsa.globetrotterpacklist.R;
 import com.google.inject.Inject;
-import org.apache.http.util.EntityUtils;
 import roboguice.fragment.RoboDialogFragment;
 import roboguice.inject.InjectView;
 
 import java.io.*;
-import java.util.UUID;
 
 public class ItemAddEditDialog extends RoboDialogFragment {
 
@@ -43,12 +43,15 @@ public class ItemAddEditDialog extends RoboDialogFragment {
     private ItemService itemService;
 
     @Inject
+    private Resources resources;
+
+    @Inject
     ContentResolver cr;
 
     private Long id;
     private String name;
-    private String photoId;
-    private Bitmap tempPhoto;
+    private byte[] image;
+    private Bitmap tempImage;
 
     public static ItemAddEditDialog newInstance(Item item) {
         ItemAddEditDialog dialog = new ItemAddEditDialog();
@@ -56,7 +59,6 @@ public class ItemAddEditDialog extends RoboDialogFragment {
         Bundle b = new Bundle();
         b.putLong("id", item.getId());
         b.putString("name", item.getName());
-        b.putString("photo_id", item.getPhotoId());
 
         dialog.setArguments(b);
 
@@ -66,6 +68,9 @@ public class ItemAddEditDialog extends RoboDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
+        ExternalStorageUtils.deleteItemThumbnail();
     }
 
     @Override
@@ -74,7 +79,7 @@ public class ItemAddEditDialog extends RoboDialogFragment {
 
         id = (getArguments() == null) ? -1 : getArguments().getLong("id");
         name = (getArguments() == null) ? null : getArguments().getString("name");
-        photoId = (getArguments() == null) ? null : getArguments().getString("photo_id");
+        image = (getArguments() == null) ? null : getArguments().getByteArray("image");
 
         return inflater.inflate(R.layout.item_add_edit, container, false);
     }
@@ -94,23 +99,23 @@ public class ItemAddEditDialog extends RoboDialogFragment {
             }
         });
 
-        tempPhoto = ExternalStorageUtils.loadItemThumbnail("temp");
+        tempImage = ExternalStorageUtils.loadItemThumbnail("temp");
 
         if (id == -1) {
             title.setText("Add Item");
-
-            if (tempPhoto != null) {
-                photoIV.setImageBitmap(tempPhoto);
-            }
-
+            photoIV.setImageBitmap(tempImage != null
+                    ? tempImage
+                    : BitmapFactory.decodeResource(resources, R.drawable.routines_goal_poop));
         } else {
             title.setText(name);
             nameET.setText(name);
 
-            if (tempPhoto != null) {
-                photoIV.setImageBitmap(tempPhoto);
-            } else if (photoId != null) {
-                photoIV.setImageBitmap(ExternalStorageUtils.loadItemThumbnail(photoId));
+            if (tempImage != null) {
+                photoIV.setImageBitmap(tempImage);
+            } else {
+                photoIV.setImageBitmap(image != null
+                        ? BitmapFactory.decodeByteArray(image, 0, image.length)
+                        : BitmapFactory.decodeResource(resources, R.drawable.routines_goal_poop));
             }
         }
 
@@ -120,11 +125,12 @@ public class ItemAddEditDialog extends RoboDialogFragment {
                 if (isNewItemValid()) {
                     ContentValues cv = new ContentValues();
                     cv.put("name", nameET.getText().toString());
-                    cv.put("photo_id", photoId == null ? UUID.randomUUID().toString() : photoId);
 
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    tempPhoto.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                    cv.put("image", bos.toByteArray());
+                    if (tempImage != null) {
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        tempImage.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                        cv.put("image", bos.toByteArray());
+                    }
 
                     if (id == -1) {
                         cv.put("\"order\"", itemService.getItemMaxOrder() + 1);
@@ -156,6 +162,13 @@ public class ItemAddEditDialog extends RoboDialogFragment {
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance())
+            getDialog().setDismissMessage(null);
+        super.onDestroyView();
+    }
+
     public interface OnAddEditItemListener {
         void onAddItem(Uri insertedId, String newName);
         void onEditItem(int numRowsUpdated, String newName);
@@ -169,7 +182,7 @@ public class ItemAddEditDialog extends RoboDialogFragment {
             try {
                 // Save temp thumbnail
                 ExternalStorageUtils.saveItemThumbnail(bitmap, "temp");
-                tempPhoto = bitmap;
+                tempImage = bitmap;
             } catch (IOException e) {
                 e.printStackTrace();
             }

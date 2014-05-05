@@ -46,20 +46,14 @@ public class ItemCursorAdapter extends DragSortCursorAdapter {
 
         name.setText(cursor.getString(cursor.getColumnIndex("name")));
 
-        final boolean hasImage = !cursor.isNull(cursor.getColumnIndex("image"));
-
         new AsyncTask<Long, Void, Bitmap>() {
             @Override
             protected Bitmap doInBackground(Long... params) {
-                Bitmap b;
+                byte[] image = itemService.getItemImage(params[0]);
 
-                if (hasImage) {
-                    byte[] image = itemService.getItemImage(params[0]);
-                    b = BitmapFactory.decodeByteArray(image, 0, image.length);
-                } else {
-                    b = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
-                }
-                return b;
+                return (image != null)
+                        ? BitmapFactory.decodeByteArray(image, 0, image.length)
+                        : BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
             }
 
             @Override

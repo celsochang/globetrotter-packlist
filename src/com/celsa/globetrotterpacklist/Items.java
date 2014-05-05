@@ -90,10 +90,13 @@ public class Items extends RoboFragmentActivity implements LoaderManager.LoaderC
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String name = ((TextView) view.findViewById(R.id.items_item_name)).getText().toString();
+                int status = (Integer) ((ViewGroup) view).getChildAt(0).getTag();
 
-                if (itemService.toggleItemStatus(id, ((Integer) ((ViewGroup) view).getChildAt(0).getTag())) == 1) {
+                if (status == 0) {
+                    itemService.checkItem(id);
                     Toast.makeText(Items.this, "\"" + name + "\" checked", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if (status == 1) {
+                    itemService.uncheckItem(id);
                     Toast.makeText(Items.this, "\"" + name + "\" unchecked", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -131,8 +134,8 @@ public class Items extends RoboFragmentActivity implements LoaderManager.LoaderC
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this, ItemContentProvider.ITEMS, new String[]{"_id", "name", "image", "photo_id",
-                "status"}, null, null, "\"order\" ASC");
+        return new CursorLoader(this, ItemContentProvider.ITEMS, new String[]{"_id", "name", "image", "status"},
+                null, null, "\"order\" ASC");
     }
 
     @Override

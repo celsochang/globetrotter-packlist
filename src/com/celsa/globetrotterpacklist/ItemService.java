@@ -19,8 +19,8 @@ public class ItemService {
     ContentResolver cr;
 
     public Item getItem(long id) {
-        Cursor cursor = cr.query(ItemContentProvider.ITEMS, new String[] {"_id", "name", "photo_id"}, "_id = ?",
-                new String[] {String.valueOf(id)}, null);
+        Cursor cursor = cr.query(ItemContentProvider.ITEMS, new String[] {"_id", "name", "image", "status", "\"order\""},
+                "_id = ?", new String[] {String.valueOf(id)}, null);
 
         Item item = null;
 
@@ -29,7 +29,9 @@ public class ItemService {
             item = new Item(
                     cursor.getLong(cursor.getColumnIndex("_id")),
                     cursor.getString(cursor.getColumnIndex("name")),
-                    cursor.getString(cursor.getColumnIndex("photo_id")));
+                    cursor.getBlob(cursor.getColumnIndex("image")),
+                    cursor.getInt(cursor.getColumnIndex("status")),
+                    cursor.getInt(cursor.getColumnIndex("order")));
         } finally {
             cursor.close();
         }
@@ -49,10 +51,11 @@ public class ItemService {
         } finally {
             cursor.close();
         }
+
         return image;
     }
 
-    public long getItemMaxOrder() {
+    public int getItemMaxOrder() {
         Cursor cursor = cr.query(ItemContentProvider.ITEMS, new String[] {"max(\"order\")"}, null, null, null);
 
         try {
@@ -63,14 +66,20 @@ public class ItemService {
         }
     }
 
-    public int toggleItemStatus(long id, int currentStatus) {
+    public int checkItem(long id) {
         ContentValues cv = new ContentValues();
 
-        int newStatus = currentStatus == 0 ? 1 : 0;
-        cv.put("status", newStatus);
-        cr.update(ItemContentProvider.ITEMS, cv, "_id = ?", new String[] {String.valueOf(id)});
+        cv.put("status", 1);
 
-        return newStatus;
+        return cr.update(ItemContentProvider.ITEMS, cv, "_id = ?", new String[] {String.valueOf(id)});
+    }
+
+    public int uncheckItem(long id) {
+        ContentValues cv = new ContentValues();
+
+        cv.put("status", 0);
+
+        return cr.update(ItemContentProvider.ITEMS, cv, "_id = ?", new String[] {String.valueOf(id)});
     }
 
     public int uncheckAllItems() {

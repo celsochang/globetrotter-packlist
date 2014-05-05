@@ -5,20 +5,15 @@ public class Item {
     private long id;
     private String name;
     private byte[] image;
-    private String photoId;
-    private Integer status;
-    private Integer order;
+    private int status;
+    private int order;
 
-    public Item(long id, String name, byte[] image) {
+    public Item(long id, String name, byte[] image, int status, int order) {
         this.id = id;
         this.name = name;
         this.image = image;
-    }
-
-    public Item(long id, String name, String photoId) {
-        this.id = id;
-        this.name = name;
-        this.photoId = photoId;
+        this.status = status;
+        this.order = order;
     }
 
     public long getId() {
@@ -45,27 +40,19 @@ public class Item {
         this.image = image;
     }
 
-    public String getPhotoId() {
-        return photoId;
-    }
-
-    public void setPhotoId(String photoId) {
-        this.photoId = photoId;
-    }
-
-    public Integer getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
-    public Integer getOrder() {
+    public int getOrder() {
         return order;
     }
 
-    public void setOrder(Integer order) {
+    public void setOrder(int order) {
         this.order = order;
     }
 }

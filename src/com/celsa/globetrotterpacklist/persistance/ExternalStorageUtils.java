@@ -36,16 +36,23 @@ public class ExternalStorageUtils {
         }
     }
 
-    public static Bitmap loadItemThumbnail(String photoId) {
+    public static Bitmap loadItemThumbnail(String filename) {
         Bitmap photo = null;
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File file = new File(new File(path + "/" + Constants.PHOTOS_DIR), photoId);
+            File file = new File(new File(path + "/" + Constants.PHOTOS_DIR), filename);
 
             photo = BitmapFactory.decodeFile(file.getPath());
         }
 
         return photo;
+    }
+
+    public static boolean deleteItemThumbnail() {
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File file = new File(new File(path + "/" + Constants.PHOTOS_DIR), "temp");
+
+        return file.delete();
     }
 }
